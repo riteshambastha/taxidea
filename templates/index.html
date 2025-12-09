@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}TaxIdea - Find Over-Assessed Properties in NJ{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-bold mb-4">
+                    Discover Tax Appeal Opportunities in New Jersey
+                </h1>
+                <p class="lead mb-4">
+                    Our data-driven platform identifies properties that are over-assessed relative to their recent sale prices. 
+                    Find legitimate tax appeal candidates with our proprietary "Goldilocks" filtering methodology.
+                </p>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="/search" class="btn btn-light btn-lg px-4">
+                        <i class="bi bi-search"></i> Search Properties
+                    </a>
+                    <a href="/map" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-map"></i> Map View
+                    </a>
+                    <a href="/dashboard" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-graph-up"></i> Analytics
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center">
+                <div class="mt-4 mt-lg-0">
+                    <i class="bi bi-building" style="font-size: 200px; opacity: 0.8;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-value">{{ stats.total_leads }}</div>
+                <div class="stat-label">Properties Found</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-value">{{ stats.total_overpayment|currency }}</div>
+                <div class="stat-label">Total Over-Assessment</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-value">{{ stats.total_annual_savings|currency }}</div>
+                <div class="stat-label">Annual Tax Savings</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-value">{{ stats.avg_savings_per_property|currency }}</div>
+                <div class="stat-label">Avg. Savings/Property</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="text-muted">Our proprietary "Goldilocks" methodology ensures quality leads</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: var(--secondary-color);"></i>
+                </div>
+                <h5>1. Data Ingestion</h5>
+                <p class="text-muted">Parse NJ MOD IV & SR1A files using precise field specifications</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-funnel" style="font-size: 3rem; color: var(--secondary-color);"></i>
+                </div>
+                <h5>2. Strict Filtering</h5>
+                <p class="text-muted">NU Code 0 only, $200K+ sales, residential properties</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-calculator" style="font-size: 3rem; color: var(--secondary-color);"></i>
+                </div>
+                <h5>3. Goldilocks Range</h5>
+                <p class="text-muted">Ratio 1.15-2.5x: Not too low, not too high, just right</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="bi bi-trophy" style="font-size: 3rem; color: var(--secondary-color);"></i>
+                </div>
+                <h5>4. Court-Ready Leads</h5>
+                <p class="text-muted">Legitimate appeals with defensible calculations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Municipalities -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h2 class="fw-bold">Available Municipalities</h2>
+            <p class="text-muted">Currently analyzing {{ stats.municipalities }} municipality in New Jersey</p>
+        </div>
+    </div>
+    <div class="row">
+        {% for code, info in municipalities.items() %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-geo-alt-fill text-primary"></i> {{ info.name }}
+                    </h5>
+                    <p class="card-text text-muted">{{ info.county }} County</p>
+                    <a href="/search?municipality={{ code }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-search"></i> View Properties
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Features -->
+<div class="container mb-5">
+    <div class="row bg-light rounded p-5">
+        <div class="col-md-6">
+            <h3 class="fw-bold mb-4">Platform Features</h3>
+            <ul class="list-unstyled">
+                <li class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Advanced Search & Filtering</strong> - Find properties by price, ratio, savings potential
+                </li>
+                <li class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Detailed Property Profiles</strong> - Complete information for each appeal candidate
+                </li>
+                <li class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Analytics Dashboard</strong> - Visualize opportunities across municipalities
+                </li>
+                <li class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Export & Download</strong> - CSV exports for your CRM or outreach tools
+                </li>
+                <li class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Data Quality Guaranteed</strong> - Goldilocks methodology eliminates false positives
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h3 class="fw-bold mb-4">Why Goldilocks?</h3>
+            <div class="alert alert-info">
+                <h5><i class="bi bi-info-circle"></i> Our Secret Sauce</h5>
+                <p class="mb-2"><strong>Ratio &lt; 1.15:</strong> Too small - not worth appealing</p>
+                <p class="mb-2"><strong>Ratio 1.15-2.5:</strong> Just right - legitimate appeals</p>
+                <p class="mb-2"><strong>Ratio &gt; 2.5:</strong> Too large - likely data errors or teardowns</p>
+                <hr>
+                <p class="mb-0 small">
+                    <i class="bi bi-shield-check"></i> All leads are verified arm's-length transactions 
+                    with NU Code 0 and minimum $200K sale prices.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container text-center mb-5">
+    <div class="p-5 bg-primary text-white rounded">
+        <h2 class="fw-bold mb-3">Ready to Find Tax Appeal Opportunities?</h2>
+        <p class="lead mb-4">Start exploring over-assessed properties in your target municipality</p>
+        <a href="/search" class="btn btn-light btn-lg">
+            <i class="bi bi-search"></i> Start Searching Now
+        </a>
+    </div>
+</div>
+{% endblock %}
+

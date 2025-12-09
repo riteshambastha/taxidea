@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Large data files (too big for GitHub - 100MB+ each)
+modiv-2025/
+modiv-2025.zip
+Sales2025.txt
+Sales2025.zip
+
+# Export/temporary files
+leads_for_enrichment_*.csv
+
+# Logs
+*.log
+

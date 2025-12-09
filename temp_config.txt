@@ -1,0 +1,7 @@
+
+TARGET_COUNTY = '02'
+TARGET_DISTRICT = '60'
+COUNTY_FILE = 'modiv-2025/Bergen.txt'
+OUTPUT_FILE = 'teaneck_goldilocks_leads.csv'
+NAME = 'Teaneck'
+COUNTY_NAME = 'Bergen'

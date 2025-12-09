@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.Address }} - Property Details{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="/search" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Search
+        </a>
+    </div>
+
+    <!-- Property Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h1 class="fw-bold mb-2">
+                        <i class="bi bi-house-door-fill text-primary"></i> {{ property.Address }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-geo-alt-fill"></i> {{ property.Municipality }}, {{ property.County }} County, NJ
+                    </p>
+                    <p class="text-muted">
+                        <strong>Block:</strong> {{ property.Block }} | 
+                        <strong>Lot:</strong> {{ property.Lot }}
+                        {% if property.Qual %} | <strong>Qual:</strong> {{ property.Qual }}{% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="badge bg-success fs-5 p-3">
+                        <i class="bi bi-currency-dollar"></i> {{ property.Annual_Tax_Savings|currency }}/year
+                    </div>
+                    <p class="text-muted mt-2 mb-0">Potential Annual Savings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Recent Sale Price</div>
+                <div class="stat-value" style="font-size: 1.8rem;">{{ property.Sale_Price|currency }}</div>
+                <small class="text-muted">Sold: {{ property.sale_date_formatted }}</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Current Assessment</div>
+                <div class="stat-value" style="font-size: 1.8rem;">{{ property.Assessed_Value|currency }}</div>
+                <small class="text-danger">{{ property.overpayment_percentage|round(1) }}% over sale price</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Assessment Ratio</div>
+                <div class="stat-value" style="font-size: 1.8rem;">{{ property.Ratio|ratio }}</div>
+                <small class="text-muted">Goldilocks Range: 1.15-2.5</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Implied Over-Assessment</div>
+                <div class="stat-value" style="font-size: 1.8rem; color: var(--danger-color);">
+                    {{ property.Implied_Overpayment|currency }}
+                </div>
+                <small class="text-muted">Above 1.15x safe buffer</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analysis -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calculator"></i> Tax Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td><strong>Current Annual Tax (est.)</strong></td>
+                            <td class="text-end">{{ property.current_annual_tax|currency }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fair Market Tax (est.)</strong></td>
+                            <td class="text-end">{{ property.fair_annual_tax|currency }}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>Potential Annual Savings</strong></td>
+                            <td class="text-end fw-bold">{{ property.Annual_Tax_Savings|currency }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><hr></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Est. Tax Rate</strong></td>
+                            <td class="text-end">{{ (property.tax_rate_estimate * 100)|round(2) }}%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Safe Market Value (1.15x)</strong></td>
+                            <td class="text-end">{{ (property.Sale_Price * 1.15)|currency }}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="alert alert-info mt-3">
+                        <small>
+                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> 
+                            Tax calculations use estimated effective rate of {{ (property.tax_rate_estimate * 100) }}% 
+                            for {{ property.Municipality }}. Actual rates may vary.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Appeal Opportunity</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-success"><i class="bi bi-check-circle-fill"></i> Why This is a Good Lead</h6>
+                    <ul class="mb-4">
+                        <li>Recent sale price: {{ property.Sale_Price|currency }} ({{ property.sale_date_formatted }})</li>
+                        <li>Assessment {{ property.overpayment_percentage|round(0) }}% higher than sale price</li>
+                        <li>Ratio {{ property.Ratio|ratio }} within Goldilocks range (1.15-2.5)</li>
+                        <li>Verified arm's-length transaction (NU Code 0)</li>
+                        <li>Residential property with minimum $200K value</li>
+                    </ul>
+
+                    <h6 class="text-primary"><i class="bi bi-cash-stack"></i> Revenue Potential</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Year 1 Savings:</td>
+                            <td class="text-end fw-bold">{{ property.Annual_Tax_Savings|currency }}</td>
+                        </tr>
+                        <tr>
+                            <td>3-Year Total (est.):</td>
+                            <td class="text-end fw-bold">{{ (property.Annual_Tax_Savings * 3)|currency }}</td>
+                        </tr>
+                        <tr>
+                            <td>5-Year Total (est.):</td>
+                            <td class="text-end fw-bold">{{ (property.Annual_Tax_Savings * 5)|currency }}</td>
+                        </tr>
+                    </table>
+
+                    <div class="alert alert-warning mt-3">
+                        <small>
+                            <i class="bi bi-lightbulb"></i> <strong>Fee Opportunity:</strong> 
+                            At 50% of first-year savings, potential fee: 
+                            <strong>{{ (property.Annual_Tax_Savings * 0.5)|currency }}</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Details -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-square"></i> Property Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Address:</strong></td>
+                                    <td>{{ property.Address }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Municipality:</strong></td>
+                                    <td>{{ property.Municipality }}, {{ property.County }} County</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Block/Lot:</strong></td>
+                                    <td>{{ property.Block }} / {{ property.Lot }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sale Date:</strong></td>
+                                    <td>{{ property.sale_date_formatted }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Sale Price:</strong></td>
+                                    <td>{{ property.Sale_Price|currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Current Assessment:</strong></td>
+                                    <td>{{ property.Assessed_Value|currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Assessment Ratio:</strong></td>
+                                    <td>{{ property.Ratio|ratio }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Owner Name:</strong></td>
+                                    <td>{{ property.Owner_Name if property.Owner_Name else 'Not Available' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Owner Contact Research -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-info h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Owner Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-info"><i class="bi bi-search"></i> Research Sources</h6>
+                    <div class="list-group mb-3">
+                        <a href="https://tax1.co.monmouth.nj.us/cgi-bin/prc6.cgi?&ms_user=monm&district={{ property.MuniCode.split('-')[1] }}&block={{ property.Block }}&lot={{ property.Lot }}" 
+                           target="_blank" class="list-group-item list-group-item-action">
+                            <i class="bi bi-box-arrow-up-right"></i> Monmouth County Tax Records
+                            <br><small class="text-muted">Official property tax information</small>
+                        </a>
+                        <a href="https://www12.co.monmouth.nj.us/planning/GIS/gis.asp" 
+                           target="_blank" class="list-group-item list-group-item-action">
+                            <i class="bi bi-box-arrow-up-right"></i> Monmouth County GIS
+                            <br><small class="text-muted">Property maps and details</small>
+                        </a>
+                        <a href="https://whitepages.com" target="_blank" class="list-group-item list-group-item-action">
+                            <i class="bi bi-box-arrow-up-right"></i> WhitePages Lookup
+                            <br><small class="text-muted">Phone number and address search</small>
+                        </a>
+                    </div>
+                    
+                    <h6 class="text-info"><i class="bi bi-file-text"></i> Owner Information</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Owner Name:</strong></td>
+                            <td>{{ property.Owner_Name if property.Owner_Name else 'Research Required' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Property Address:</strong></td>
+                            <td>{{ property.Address }}<br>{{ property.Municipality }}, NJ</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Block/Lot:</strong></td>
+                            <td>{{ property.Block }} / {{ property.Lot }}</td>
+                        </tr>
+                    </table>
+
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Privacy Note:</strong> 
+                            Verify all contact information through official county records before outreach.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-success h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Outreach Script Template</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-success"><i class="bi bi-telephone"></i> Phone Script</h6>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <small>
+                            <p class="mb-2"><strong>"Hi, is this {{ property.Owner_Name if property.Owner_Name else '[Owner Name]' }}?"</strong></p>
+                            <p class="mb-2">"My name is [Your Name] with [Company]. I specialize in property tax appeals in {{ property.Municipality }}."</p>
+                            <p class="mb-2">"I noticed your property at {{ property.Address }} recently sold for {{ property.Sale_Price|currency }} but is currently assessed at {{ property.Assessed_Value|currency }}."</p>
+                            <p class="mb-2">"This means you may be overpaying approximately <strong>{{ property.Annual_Tax_Savings|currency }} per year</strong> in property taxes."</p>
+                            <p class="mb-0">"We work on a contingency basis - you only pay if we successfully reduce your assessment. Would you be interested in a free evaluation?"</p>
+                        </small>
+                    </div>
+
+                    <h6 class="text-success"><i class="bi bi-envelope"></i> Email Template</h6>
+                    <button class="btn btn-sm btn-outline-success mb-2" onclick="copyEmailTemplate()">
+                        <i class="bi bi-clipboard"></i> Copy Email Template
+                    </button>
+                    <textarea id="emailTemplate" class="form-control" rows="8" readonly>
+Subject: Potential ${{ property.Annual_Tax_Savings|currency }}/year Property Tax Savings - {{ property.Address }}
+
+Dear {{ property.Owner_Name if property.Owner_Name else 'Property Owner' }},
+
+I hope this message finds you well. I'm reaching out regarding your property at {{ property.Address }} in {{ property.Municipality }}.
+
+Our analysis shows that your property recently sold for {{ property.Sale_Price|currency }} in {{ property.sale_date_formatted }}, but is currently assessed at {{ property.Assessed_Value|currency }} - a {{ property.overpayment_percentage|round(0) }}% difference.
+
+This over-assessment means you may be overpaying approximately {{ property.Annual_Tax_Savings|currency }} per year in property taxes, or {{ (property.Annual_Tax_Savings * 3)|currency }} over 3 years.
+
+We specialize in property tax appeals and work on a contingency basis - you only pay if we successfully reduce your assessment. Our success rate for cases like yours is over 85%.
+
+Would you be available for a brief 15-minute call this week to discuss this opportunity?
+
+Best regards,
+[Your Name]
+[Your Company]
+[Your Phone]
+                    </textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appeal Strategy -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Appeal Strategy Recommendation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-warning"><i class="bi bi-check-circle"></i> Strength of Case</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                {% if property.Ratio >= 1.5 %}
+                                <div class="progress-bar bg-success" style="width: 90%">Very Strong (90%)</div>
+                                {% elif property.Ratio >= 1.3 %}
+                                <div class="progress-bar bg-success" style="width: 80%">Strong (80%)</div>
+                                {% elif property.Ratio >= 1.2 %}
+                                <div class="progress-bar bg-info" style="width: 70%">Good (70%)</div>
+                                {% else %}
+                                <div class="progress-bar bg-warning" style="width: 60%">Moderate (60%)</div>
+                                {% endif %}
+                            </div>
+                            
+                            <h6 class="text-warning mt-3"><i class="bi bi-trophy"></i> Key Arguments</h6>
+                            <ul>
+                                <li><strong>Recent Sale Price:</strong> Property sold for {{ property.Sale_Price|currency }} on {{ property.sale_date_formatted }}</li>
+                                <li><strong>Market Value Indicator:</strong> Arms-length transaction verified (NU Code 0)</li>
+                                <li><strong>Over-Assessment:</strong> Current assessment {{ property.overpayment_percentage|round(0) }}% above recent sale</li>
+                                <li><strong>Chapter 123 Common Level:</strong> Even with 1.15x buffer, property is over-assessed by {{ property.Implied_Overpayment|currency }}</li>
+                            </ul>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-warning"><i class="bi bi-calendar-check"></i> Appeal Timeline</h6>
+                            <div class="timeline">
+                                <div class="mb-3">
+                                    <strong>Week 1-2:</strong> Contact owner, sign agreement, gather documents
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Week 3-4:</strong> File appeal with county tax board (by April 1st deadline)
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Month 2-4:</strong> Discovery, prepare evidence, comparable sales
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Month 4-6:</strong> Tax board hearing, present case
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Month 6-8:</strong> Decision received, assessment adjusted
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-3">
+                                <small>
+                                    <i class="bi bi-info-circle"></i> <strong>Important:</strong> 
+                                    Property tax appeals in NJ must be filed by April 1st of the tax year. 
+                                    Recent sales provide strong evidence for assessment reduction.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Checklist -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> Required Documents Checklist</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc1">
+                        <label class="form-check-label" for="doc1">
+                            <strong>Signed Contingency Agreement</strong>
+                            <br><small class="text-muted">Fee agreement (typically 50% of Year 1 savings)</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc2">
+                        <label class="form-check-label" for="doc2">
+                            <strong>Deed/Closing Statement</strong>
+                            <br><small class="text-muted">Proof of sale price: {{ property.Sale_Price|currency }}</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc3">
+                        <label class="form-check-label" for="doc3">
+                            <strong>Current Property Tax Bill</strong>
+                            <br><small class="text-muted">Shows current assessment: {{ property.Assessed_Value|currency }}</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc4">
+                        <label class="form-check-label" for="doc4">
+                            <strong>Property Record Card</strong>
+                            <br><small class="text-muted">From county tax assessor's office</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc5">
+                        <label class="form-check-label" for="doc5">
+                            <strong>Photos of Property</strong>
+                            <br><small class="text-muted">Interior and exterior condition documentation</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc6">
+                        <label class="form-check-label" for="doc6">
+                            <strong>Appeal Form (Petition)</strong>
+                            <br><small class="text-muted">County tax board appeal form completed</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="doc7">
+                        <label class="form-check-label" for="doc7">
+                            <strong>Comparable Sales Analysis</strong>
+                            <br><small class="text-muted">Similar properties in {{ property.Municipality }}</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-danger h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Important Considerations</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-danger"><i class="bi bi-clock"></i> Critical Dates</h6>
+                    <ul>
+                        <li><strong>April 1:</strong> Deadline to file property tax appeal in NJ</li>
+                        <li><strong>{{ property.sale_date_formatted }}:</strong> Date of sale (strong evidence point)</li>
+                        <li><strong>Tax Year:</strong> Current assessment year for appeal</li>
+                    </ul>
+
+                    <h6 class="text-danger mt-3"><i class="bi bi-shield-check"></i> Success Factors</h6>
+                    <div class="mb-2">
+                        <span class="badge bg-success">✓</span> Recent sale (within 12 months): 
+                        {% if property.sale_date_formatted and property.sale_date_formatted != 'N/A' %}
+                        <strong class="text-success">Yes - Strong Evidence</strong>
+                        {% else %}
+                        <strong class="text-muted">Check Records</strong>
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-success">✓</span> Arm's-length transaction: <strong class="text-success">Yes (NU Code 0)</strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-success">✓</span> Ratio in appealable range: <strong class="text-success">{{ property.Ratio|ratio }} (Goldilocks)</strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-success">✓</span> Residential property: <strong class="text-success">Yes (Class 2)</strong>
+                    </div>
+
+                    <h6 class="text-danger mt-3"><i class="bi bi-calculator"></i> Expected Outcome</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Current Assessment:</td>
+                            <td class="text-end"><strong>{{ property.Assessed_Value|currency }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Target Assessment:</td>
+                            <td class="text-end"><strong class="text-success">{{ (property.Sale_Price * 1.15)|currency }}</strong></td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>Potential Reduction:</strong></td>
+                            <td class="text-end"><strong>{{ property.Implied_Overpayment|currency }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Annual Tax Savings:</td>
+                            <td class="text-end"><strong class="text-success">{{ property.Annual_Tax_Savings|currency }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group">
+                <a href="/search" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Back to Search
+                </a>
+                <button class="btn btn-success btn-lg" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Print Property Report
+                </button>
+                <button class="btn btn-info btn-lg" onclick="copyEmailTemplate()">
+                    <i class="bi bi-envelope"></i> Copy Email Template
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyEmailTemplate() {
+    const emailText = document.getElementById('emailTemplate');
+    emailText.select();
+    document.execCommand('copy');
+    
+    // Show success message
+    alert('Email template copied to clipboard!');
+}
+</script>
+
+<style>
+@media print {
+    .navbar, footer, .btn-group { display: none; }
+    .card { page-break-inside: avoid; }
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - TaxIdea{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .metric-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    .metric-box h3 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+    .distribution-bar {
+        height: 40px;
+        background-color: var(--secondary-color);
+        margin-bottom: 10px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold"><i class="bi bi-graph-up"></i> Analytics Dashboard</h1>
+            <p class="text-muted">Comprehensive overview of tax appeal opportunities</p>
+        </div>
+    </div>
+
+    {% if data %}
+    <!-- Top Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="metric-box">
+                <h3>{{ data.total_leads }}</h3>
+                <p class="mb-0">Total Properties</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h3>{{ data.total_opportunity|currency }}</h3>
+                <p class="mb-0">Total Over-Assessment</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h3>{{ data.avg_opportunity|currency }}</h3>
+                <p class="mb-0">Avg Per Property</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="mb-4"><i class="bi bi-bar-chart"></i> Distribution by Ratio</h4>
+                {% for range, count in data.ratio_distribution.items() %}
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>{{ range }}</span>
+                        <span class="badge bg-primary">{{ count }} properties</span>
+                    </div>
+                    <div class="distribution-bar" 
+                         style="width: {{ (count / data.total_leads * 100)|round(0) }}%; max-width: 100%;">
+                        {{ (count / data.total_leads * 100)|round(0) }}%
+                    </div>
+                </div>
+                {% endfor %}
+                <small class="text-muted mt-2 d-block">
+                    <i class="bi bi-info-circle"></i> Goldilocks range is 1.15-2.5x
+                </small>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="mb-4"><i class="bi bi-currency-dollar"></i> Distribution by Sale Price</h4>
+                {% for range, count in data.price_ranges.items() %}
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>{{ range }}</span>
+                        <span class="badge bg-success">{{ count }} properties</span>
+                    </div>
+                    <div class="distribution-bar" 
+                         style="width: {{ (count / data.total_leads * 100)|round(0) }}%; max-width: 100%; background-color: var(--success-color);">
+                        {{ (count / data.total_leads * 100)|round(0) }}%
+                    </div>
+                </div>
+                {% endfor %}
+                <small class="text-muted mt-2 d-block">
+                    <i class="bi bi-info-circle"></i> All properties have minimum $200K sale price
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Properties -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4 class="mb-4"><i class="bi bi-trophy"></i> Top 10 Appeal Opportunities</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Rank</th>
+                                <th>Address</th>
+                                <th>Municipality</th>
+                                <th>Sale Price</th>
+                                <th>Assessment</th>
+                                <th>Ratio</th>
+                                <th>Over-Assessment</th>
+                                <th>Annual Savings</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prop in data.top_10 %}
+                            <tr>
+                                <td><strong>#{{ loop.index }}</strong></td>
+                                <td>{{ prop.Address[:30] }}</td>
+                                <td>{{ prop.Municipality }}</td>
+                                <td>{{ prop.Sale_Price|currency }}</td>
+                                <td>{{ prop.Assessed_Value|currency }}</td>
+                                <td><span class="badge bg-warning">{{ prop.Ratio|ratio }}</span></td>
+                                <td><strong class="text-danger">{{ prop.Implied_Overpayment|currency }}</strong></td>
+                                <td><strong class="text-success">{{ prop.Annual_Tax_Savings|currency }}</strong></td>
+                                <td>
+                                    <a href="/property/{{ prop.MuniCode }}/{{ prop.Block }}/{{ prop.Lot }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- By Municipality -->
+    {% if data.by_municipality|length > 1 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4 class="mb-4"><i class="bi bi-geo-alt"></i> Properties by Municipality</h4>
+                {% for muni, count in data.by_municipality.items() %}
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span><i class="bi bi-building"></i> {{ muni }}</span>
+                        <span class="badge bg-info">{{ count }} properties</span>
+                    </div>
+                    <div class="distribution-bar" 
+                         style="width: {{ (count / data.total_leads * 100)|round(0) }}%; max-width: 100%; background-color: var(--warning-color);">
+                        {{ (count / data.total_leads * 100)|round(0) }}%
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Insights -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Key Insights</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>{{ data.total_leads }}</strong> verified appeal candidates
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Average over-assessment: <strong>{{ data.avg_opportunity|currency }}</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success"></i>
+                            All properties pass Goldilocks filters
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success"></i>
+                            100% arm's-length transactions (NU Code 0)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-success h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Revenue Potential</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Top 10 Properties:</strong></p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            Total Over-Assessment: 
+                            <strong>{{ data.top_10|map(attribute='Implied_Overpayment')|sum|currency }}</strong>
+                        </li>
+                        <li class="mb-2">
+                            Annual Tax Savings: 
+                            <strong>{{ data.top_10|map(attribute='Annual_Tax_Savings')|sum|currency }}</strong>
+                        </li>
+                        <li class="mb-2">
+                            Fee Potential (50%): 
+                            <strong>{{ (data.top_10|map(attribute='Annual_Tax_Savings')|sum * 0.5)|currency }}</strong>
+                        </li>
+                    </ul>
+                    <hr>
+                    <p><strong>All Properties:</strong></p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            Total Opportunity: <strong>{{ data.total_opportunity|currency }}</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-info h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-shield-check"></i> Data Quality</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check2-circle text-info"></i>
+                            <strong>Goldilocks Filtering:</strong> Ratio 1.15-2.5x
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check2-circle text-info"></i>
+                            <strong>Price Floor:</strong> Minimum $200K sales
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check2-circle text-info"></i>
+                            <strong>NU Code 0:</strong> Verified arm's-length only
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check2-circle text-info"></i>
+                            <strong>Residential Only:</strong> Property Class 2
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-warning text-center">
+        <h4><i class="bi bi-exclamation-triangle"></i> No Data Available</h4>
+        <p>Please run the analysis pipeline first to generate leads.</p>
+        <a href="/" class="btn btn-primary">Go to Home</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

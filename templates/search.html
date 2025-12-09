@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Search Property Leads - TaxIdea{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold"><i class="bi bi-search"></i> Search Tax Appeal Leads</h1>
+            <p class="text-muted">Filter and explore over-assessed properties</p>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+        <form method="GET" action="/search" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Municipality</label>
+                <select name="municipality" class="form-select">
+                    <option value="all" {% if filters.municipality == 'all' %}selected{% endif %}>All Municipalities</option>
+                    {% for code, info in municipalities.items() %}
+                    <option value="{{ code }}" {% if filters.municipality == code %}selected{% endif %}>
+                        {{ info.name }}, {{ info.county }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Min Annual Savings</label>
+                <input type="number" name="min_savings" class="form-control" 
+                       value="{{ filters.min_savings }}" placeholder="$0">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Min Sale Price</label>
+                <input type="number" name="min_price" class="form-control" 
+                       value="{{ filters.min_price }}" placeholder="$200,000">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Max Sale Price</label>
+                <input type="number" name="max_price" class="form-control" 
+                       value="{{ filters.max_price if filters.max_price < 999999999 else '' }}" placeholder="Any">
+            </div>
+            
+            <div class="col-md-1">
+                <label class="form-label">Min Ratio</label>
+                <input type="number" step="0.01" name="min_ratio" class="form-control" 
+                       value="{{ filters.min_ratio }}" placeholder="1.15">
+            </div>
+            
+            <div class="col-md-1">
+                <label class="form-label">Max Ratio</label>
+                <input type="number" step="0.01" name="max_ratio" class="form-control" 
+                       value="{{ filters.max_ratio }}" placeholder="2.5">
+            </div>
+            
+            <div class="col-md-1">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-3">
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i> 
+                Sort by: 
+                <a href="/search?sort=Implied_Overpayment" class="text-decoration-none">Overpayment</a> | 
+                <a href="/search?sort=Ratio" class="text-decoration-none">Ratio</a> | 
+                <a href="/search?sort=Annual_Tax_Savings" class="text-decoration-none">Annual Savings</a> | 
+                <a href="/search?sort=Sale_Price" class="text-decoration-none">Sale Price</a>
+            </small>
+        </div>
+    </div>
+
+    <!-- Results Stats -->
+    {% if stats.count > 0 %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-primary fw-bold">{{ stats.count }}</h5>
+                    <small class="text-muted">Properties Found</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-success fw-bold">{{ stats.total_savings|currency }}</h5>
+                    <small class="text-muted">Total Annual Savings</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-warning fw-bold">{{ stats.avg_savings|currency }}</h5>
+                    <small class="text-muted">Avg Savings/Property</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-info fw-bold">{{ stats.total_overpayment|currency }}</h5>
+                    <small class="text-muted">Total Over-Assessment</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results List -->
+    <div class="row">
+        <div class="col-12">
+            <h4 class="mb-3">Results ({{ stats.count }} properties)</h4>
+            
+            {% for lead in leads %}
+            <div class="property-card">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <h5 class="mb-1">
+                            <i class="bi bi-house-door"></i> {{ lead.Address }}
+                        </h5>
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ lead.Municipality }}, {{ lead.County }} County
+                            <br>
+                            Block: {{ lead.Block }} | Lot: {{ lead.Lot }}
+                        </small>
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted d-block">Sale Price</small>
+                        <strong>{{ lead.Sale_Price|currency }}</strong>
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted d-block">Assessment</small>
+                        <strong>{{ lead.Assessed_Value|currency }}</strong>
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted d-block">Over-Assessment</small>
+                        <span class="badge badge-savings">{{ lead.Implied_Overpayment|currency }}</span>
+                        <br>
+                        <small class="text-success">{{ lead.Annual_Tax_Savings|currency }}/yr</small>
+                    </div>
+                    <div class="col-md-1">
+                        <span class="badge badge-ratio">{{ lead.Ratio|ratio }}</span>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="/property/{{ lead.MuniCode }}/{{ lead.Block }}/{{ lead.Lot }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrow-right"></i> Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        <i class="bi bi-exclamation-triangle"></i> No properties found matching your criteria. Try adjusting your filters.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

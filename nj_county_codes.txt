@@ -1,0 +1,45 @@
+NJ COUNTY CODES (for tax_appeal_pipeline.py)
+==============================================
+
+Use these codes in the TARGET_COUNTY variable:
+
+01 - Atlantic
+02 - Bergen
+03 - Burlington
+04 - Camden
+05 - Cape May
+06 - Cumberland
+07 - Essex
+08 - Gloucester
+09 - Hudson
+10 - Hunterdon
+11 - Mercer
+12 - Middlesex
+13 - Monmouth (currently configured)
+14 - Morris
+15 - Ocean
+16 - Passaic
+17 - Salem
+18 - Somerset
+19 - Sussex
+20 - Union
+21 - Warren
+
+DISTRICT CODES
+==============
+District codes vary by county. You'll need to find the specific
+district code for the town you're targeting.
+
+For Monmouth County (13):
+- Marlboro = 28 (currently configured)
+- (Other districts require lookup in the data files)
+
+HOW TO FIND DISTRICT CODES:
+1. grep '^[county_code]' modiv-2025/[County].txt | less
+2. Look at the first 4 digits: [CC][DD] where CC=county, DD=district
+3. Check the town name in the address field
+
+Example:
+grep '^1328' modiv-2025/Monmouth.txt | head -1
+Shows records for County 13, District 28 (Marlboro)
+
